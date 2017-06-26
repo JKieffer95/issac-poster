@@ -1,0 +1,173 @@
+\documentclass[12pt]{article}
+
+% packages
+\usepackage{sigsam, amsmath}
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{lmodern}
+\usepackage{fullpage}
+\newtheorem{theorem}{Theorem}
+
+% leave as is
+\issue{TBA}
+\articlehead{TBA}
+\titlehead{Title of your paper}
+\authorhead{Author's Name}
+\setcounter{page}{1}
+
+%other commands
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\renewcommand{\frak}{\mathfrak}
+\newcommand{\E}{\mathcal{E}}
+\newcommand{\End}{\mathrm{End}}
+\renewcommand{\O}{\mathcal{O}}
+\newcommand{\Ell}{\mathrm{Ell}}
+\newcommand{\Cl}{\mathcal{C}}
+\newcommand{\Ker}{\mathrm{Ker}}
+\renewcommand{\mod}{\mathrm{mod}}
+
+
+\begin{document}
+
+\title{Title of your paper}
+
+\author{John A. Smith \\
+Department of $\ldots$ \\
+University of $\ldots$ \\
+City, Country, Postal Code \\
+\url{e-mail@server.edu}}
+
+\date{}
+
+\maketitle
+
+\begin{abstract}
+Our objective is to bring the cryptosystem proposed by Rostovtsev and Stolbunov \cite{RS} into real life, achieving 128-bit security. After having presented the necessary background material about isogenies between elliptic curves and modular curves, we describe an important improvement in the calculations using rational torsion points on the curves, and make some comments about its efficiency. Finally, we give relevant parameters to achieve 128-bit security under heuristics, and give time measurements for these parameters in our own implementation. The latter depends on the Nemo package of the Julia programming language \cite{Nemo}, and has been the occasion to build an additional module for elliptic curves.
+\end{abstract}
+
+\section{Background material}
+
+\subsection{Isogenies} In all our discussion, we fix a finite field $k$ with large enough characteristic (think for example of $\F_p$ where $p$ is a large prime). An \emph{isogeny} between elliptic curves over $k$ is a morphism which respects the group structure. Since isogenies (up to isomorphism) correspond to extensions of function fields, every isogeny can be written as the composite of isogenies of prime degree ; in the following we consider only such isogenies, and we call \emph{$\ell$-isogeny} an isogeny of prime degree $\ell$. Since we are interested in isogenies of small degree, we may freely assume $\ell\neq p$, which implies that any $\ell$-isogeny $\phi$ is separable. In that case the $\bar{k}$-points of Ker$(\phi)$ form a (cyclic) group of order $\ell$.
+
+Conversely, given a subgroup $S$ of $\E(\bar{k})$, there is a unique separable isogeny (up to isomorphism)
+$$\phi_S\ :\ \E \to \E'$$
+whose kernel has $\bar{k}$-points $S$. $\E'$ is then denoted $\E/S$ ; this gives a bijective correspondence between cyclic subgroups of $E(\bar{k})$ of cardinal $\ell$ and $\ell$-isogenies up to isomorphism with domain $\E$.
+
+\subsection{Complex multiplication} We are concerned here with \emph{ordinary} elliptic curves over $k$. If $\E$ is ordinary, one can show that the ring $\End(\E)$ is isomorphic to an order $\O$ in a quadratic number field. Furthermore, if we have an $\ell$-isogeny $\phi\ :\ \E\to\E'$, then the isomorphisms
+$$\End(\E) \simeq \O,\ \End(\E') \simeq \O'$$
+can be made compatible, and we have either
+$$\O = \O',\ [\O : \O'] = \ell\quad \text{or}\quad [\O' : \O] = \ell.$$
+We say that $\phi$ is \emph{horizontal}, \emph{descending} or \emph{ascending}, respectively. Therefore it makes sense to introduce the set of all elliptic curves over $k$ with complex multiplication by a fixed order $\O$, denoted $\Ell_k(\O)$.
+
+Given an ideal $\frak a$ of $\End(\E)$, we can consider the subgroup
+$$S_{\frak a} = \{x \in \E(\bar{k})\ :\ f(x) = 0_{\E}\ \forall f\in \frak a\}$$
+and we may define $\frak a\cdot \E = \E /S_{\frak a}$. It can be shown that this defines an action of the group of (invertible) fractional ideals of $\O$ on $\Ell_k(\O)$. Principal ideals act trivially, so this action factorizes through an action of the \emph{ideal class group} $\Cl(\O)$ on $\Ell_k(\O)$, and the latter is simply transitive. Furthermore any horizontal isogeny is of this form.
+
+\subsection{Modular curves and modular polynomials} Our goal is now to explain how to compute this group action. It can be shown that for any ideal $\frak a$ of $\O$, the isogeny $\E \to \frak a\cdot \E$ has degree $N(\frak a)$, the \emph{norm} of $\frak a$. Any ideal can be decomposed as a product of ideals of prime norm, and there are four cases regarding invertible ideals of norm $\ell$ in $\O$ :
+\begin{itemize}
+\item if $\ell$ divides the conductor of $\O$, there is no such ideal.
+\item if $\ell$ is prime to the conductor and is inert in $K = \O\otimes\Q$, there is no such ideal.
+\item if $\ell$ is prime to the conductor and is split in $K$, we write
+$$ (\ell) = \frak l \bar{\frak l}$$
+and $\frak l$, $\bar{\frak l}$ are the two ideals of norm $\ell$ in $\O$.
+\item if $\ell$ is prime to the conductor and is ramified in $K$, then $\frak l = \bar{\frak l}$ is the only such ideal.
+\end{itemize}
+Computing the action of an ideal $\frak l$ of norm $\ell$ then amounts to computing an $\ell$-isogeny from a given curve $\E$. To achieve this, we invoke the following theorem.
+
+\begin{theorem}
+Let $N\geq 2$ be an integer. There exists a symmetric bivariate polynomial
+$$\Phi_N \in \Z[X, Y]$$
+of degree $N + 1$, such that for any field $k$ where $N$ is invertible, and any elliptic curves $\E, E'$ over $k$ with $j$-invariant $j, j'$, the multiplicity of $j'$ as root of $\Phi_N(j, Y)$ is exactly the number of cyclic $N$-isogenies $\E\to \E'$ defined over $\bar{k}$, up to isomorphism.
+\end{theorem}
+
+We say that the equation $\Phi_N(X, Y) = 0$ parametrizes the modular curve $Y_0(N)$. This result is widely used but has deep mathematical reasons (see e.g. \cite{DiIm}). There are classical methods to compute these polynomials, see \cite{?}.
+
+\subsection{Computing the action} We note that in any case $\Z[\pi]\subset \O$, where $\pi$ represents the Frobenius endomorphism and satisfies the relation
+$$\pi^2 - t \pi + q = 0$$
+where $q = \#k$. In particular, every $\ell$-isogeny must be horizontal if $\ell$ does not divide $t^2 - 4 q$. We say that $\ell$ is \emph{Elkies} if it satisfies this condition and is ramified in $K$. It may admittedly happen that $\ell$ divides the index of $\Z[\pi]$ in $\O$ and is ramified in $K$, in which case $\ell$ may actually appear in the class group even if it is not Elkies. We will ignore this issue : \emph{heuristically}, ideal with other prime norms still generate the group $\Cl(\O)$.
+
+We are now able to describe the computation of the action of an ideal $\frak l$ of norm $\ell$ on $\E \in \Ell_k(\O)$, where $\ell$ is an Elkies prime :
+\begin{enumerate}
+\item[Step 1.] Compute the $j$-invariant $j$ of $\E$ and the polynomial $P = \Phi_l(j, Y)$. According to the previous discussion, we know that $P$ has exactly 2 roots in $k$.
+\item[Step 2.] Compute the two roots $j_1, j_2$ of $k$ and equations of the image curves.
+\item[Step 3.] Check which one corresponds to $\frak l$ and which to its conjugate. The first one gives the result.
+\end{enumerate}
+
+Step 1 is straightforward once we know the modular polynomial, and Step 2 is achieved by computing $X^q$ in the ring $k[Y]/\Phi_\ell(j, Y)$ using repeated squarings, and then computing $Q = \gcd(X^q - X, \Phi_l(j, Y))$. $Q$ has then degree 2 and we can factor it using standard probabilistic methods. As we will see, this step is the bottleneck of the whole computation.
+
+Consider now Step 3. Since $\ell$ is Elkies, we may write
+$$ 0 = \pi^2 - t\pi + q = (\pi - v_1)(\pi - v_2)$$
+modulo $\ell$, that is, in the ring
+$$\O/\ell\O \simeq \O/\frak l \O \times \O/ \bar{\frak l}\O.$$
+We will call $v_1, v_2\in F_l$ the \emph{frobenius eigenvalues} modulo $\ell$. Note that $v_1\neq v_2$ since $\ell$ is Elkies. Each factor in the right hand side is canonically isomorphic to $\F_l$, therefore we have, say
+$$\pi = v_1 \ \mod\ \frak l.$$
+Remind that the kernel of the isogeny $\phi\ :\ \E\to \frak l\cdot \E$ is precisely the subgroup of $\E$ killed by $\frak l$, whence
+\begin{equation}\label{check}
+\pi(x) = v_1\cdot x
+\end{equation}
+for any $x\in \Ker(\phi)$, where the right hand side is scalar multiplication on $\E$. For example we may use the \emph{canonical point} $(X, Y)$ of $\Ker(\phi)$ over the ring
+$$k[X, Y] / (I, E)$$
+where $E$ is the equation of $\E$ and $I$ the ideal defining the affine part of $\Ker(\phi)$.
+
+In practice, when $\ell$ is odd, $I$ is generated by a single polynomial $\psi(X)$. If we have in addition $v_1\neq -v_2$, we may check equality \ref{check} using only $x$-coordinates, in the ring $k[X]/\psi.$ $\psi$ can be computed with a variety of methods used for example in the SEA algorithm, see \cite{BMSS}.
+
+
+\section{Description of the cryptosystem}
+
+In \cite{RS}, Rostovtsev and Stolbunov proposed to use this action to build a key exchange protocol. This protocol simply exploits the setting of an abelian group $G$ acting simply transitively on a set $X$ with a distinguished point $x_0$. Alice and Bob choose secret elements $g_A, g_B\in G$, compute $g_A\cdot x_0$ and $g_B\cdot x_0$ respectively and send them to each other. They are now able to compute their common secret
+$$g_A \cdot (g_B \cdot x_0) = g_B \cdot(g_A \cdot x_0)$$
+since $G$ is abelian. We can also build a public-key cryptosystem in this setting. The security of this scheme relies on the difficulty of the "discrete logarithm" problem : given $x_0$ and $g\cdot x_0$, find $g$. Note that while meet-in-the-middle attacks will succeed in expected time $O(\sqrt{\#G})$ \cite{?}, this protocol does not seem vulnerable to Pohlig-Hellman reduction.
+
+In our setting, $G$ is the class group of $\O$ : according to the Brauer-Siegel theorem \cite{}, we expect that
+$$\#G = \Theta(\sqrt{p})$$
+if our base field is $\F_p$. To achieve 128-bit security, we must therefore choose a prime number $p$ with approximately 500 bits. The key space must also be sufficienty large : since we represent our group elements as a product of ideals
+$$\left[ \prod_{i = 1}^n {\frak l}_i^{r_i}\right],$$
+the quantity $\prod_{i = 1}^n R_i$ must be sufficiently large, where $R_i$ is a bound on the $r_i$ 's (approximately $2^{250}$). We discover an unfortunate feature of this cryptographic scheme here : the security parameter grows linearly with the \emph{number} of prime numbers involved, and not with the number of steps we compute for each of them. This is not the case with supersingular curves \cite{SIDH}. We are using here the heuristic assumption that few overlaps exist in the class group between these various presentations.
+
+Since a given prime has heuristically one chance over two to be Elkies for a random curve, this amounts to considering isogenies of prime degree up to, say, 2000. For such values, one step computation takes about 5 to 10 seconds (hardware here), whence a total cost of approximately 20 minutes for a single key exchange.
+
+
+\section{An important improvement : rational torsion points}
+
+\subsection{The idea} In the favorable case where $\ell$ is an Elkies prime and $\E$ admits rational $\ell$-torsion rational points, we can do much better. This means that some part of the group $\E[\ell](\bar{k})$ is actually defined over $k$ ; in other words, the linear map $\pi$ on this space may be written in an adequate $\F_l$-basis as
+$$\left(
+\begin{matrix}
+1 & 0 \\
+0 & v
+\end{matrix}
+\right),$$
+with $v\neq 1$ according to the previous results. To compute the isogeny of degree $\ell$ associated to the Frobenius eigenvalue 1, we may find a nontrivial rational $\ell$-torsion point $Q\in \E[\ell](k)$, compute the polynomial
+$$ P = \prod_{i = 1}^{\frac{\ell - 1}{2}} (X - x_{[i] Q})$$
+(if $\ell$ is odd) and then apply Velu's formulae \cite{Velu}. The costly part here is to find an $\ell$-torsion point : for this we may take a random point $R$ on the curve and compute $Q = [m]R$, where $m = \frac{C}{\ell}$ and $C$ is the common cardinality of the curves we are considering. This succeeds if $Q$ is not the point at infinity.
+
+In order to speed up this calculation, we use the arithmetic on the Kummer line of Montgomery curves \cite{}, and use the Nemo package of the Julia programming language. In this setting we need  Velu formulae using Montgomery models.
+
+In addition, this improvement may also be used if we can find $\ell$-torsion points on a small extension of the ground field, but not all of them since we would not be able to distinguish between the eigenvalues in that case. This amounts to saying that the Frobenius eigenvalues $v_1, v_2$ have different multiplicative orders in $\F_l$, and one of them is small (less than $7$, say). Of course, this becomes more and more unlikely when $\ell$ grows, but for a particular curves we can hope that it will happen for sufficiently many primes, especially small ones. Il the minimal order we find for a given prime is $2 r$ with $r$ odd, we can reduce to order $r$ using the twisted curve instead.
+
+\subsection{Interesting curves}
+
+We present here the best curve we found after some search. We let
+$$ p = 2^{502} + 49$$
+and $\E$ be the elliptic curve over $\F_p$ defined by
+$$.$$
+
+...
+
+
+\begin{thebibliography}{99}
+
+\bibitem{CholeskyWork:2006}
+Claude Brezinski.
+\newblock The life and work of {A}ndr\'e {C}holesky.
+\newblock {\em Numer. Algorithms}, 43:279--288, 2006.
+
+\end{thebibliography}
+
+\end{document}
