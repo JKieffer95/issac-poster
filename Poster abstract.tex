@@ -1,0 +1,321 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{sigsam, amsmath}
+\newtheorem{theorem}{Theorem}
+
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\SetEndCharOfAlgoLine{}
+
+% additional commands
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\FF}{\F}
+\renewcommand{\O}{\mathcal{O}}
+\newcommand{\Ell}{\mathrm{Ell}}
+\newcommand{\Cl}{\mathcal{C}}
+\newcommand{\ms}{\mathrm{\ ms}}
+\newcommand{\s}{\mathrm{\ s}}
+\newcommand{\frakell}{\mathfrak{l}}
+\newcommand{\Walk}{\textsc{Walk}}
+\newcommand{\Step}{\textsc{Step}}
+
+% leave as is
+\issue{TBA}
+\articlehead{TBA}
+\titlehead{Isogeny-based cryptography in Julia/Nemo: a case study}
+\authorhead{Jean Kieffer, Luca De Feo}
+\setcounter{page}{1}
+
+\begin{document}
+
+\title{Isogeny-based cryptography in Julia/Nemo: a case study}
+
+\author{Jean Kieffer \\
+\'Ecole normale sup\'erieure de Paris \& INRIA, Universit\'e Paris-Saclay \\
+\url{jean.kieffer@ens.fr}
+\and
+Luca De Feo \\
+Universit\'e de Versailles \& INRIA, Universit\'e Paris-Saclay \\
+\url{luca.defeo@polytechnique.edu}}
+
+\maketitle
+
+\begin{abstract}
+The Couveignes--Rostovtsev--Stolbunov key-exchange protocol based on
+    isogenies of elliptic curves is of interest because it may resist
+    quantum attacks, but its efficient implementation remains a challenge.
+    We briefly present the computations involved, and efficient
+    algorithms to achieve the critical steps, with timing results for our implementations in Sage and Julia/Nemo.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+In \cite{RS}, Rostovtsev and Stolbunov proposed using isogenies between
+ordinary elliptic curves over finite fields to build key-exchange and
+public-key encryption schemes, rediscovering Couveignes' idea
+\cite{Couveignes}. These schemes are based on the simply transitive action
+of the abelian group $\Cl(\O)$, the class group of an order \(\O\) in a
+quadratic field, on $\Ell_t(\O)$, the set of elliptic curves over a
+(prime) finite field $\F_p$ with Frobenius trace $t$ and complex
+multiplication by the order $\O$. Elements in $\Cl(\O)$ are represented
+as products of ideals of prime norm, up to a certain bound. 
+Each of these ideals \(\frakell\) is represented by its norm \(\ell\) and a
+\emph{Frobenius eigenvalue} \(v_\ell\),
+which is one of the two roots of \(X^2 - tX + p \pmod{\ell}\).
+Computing the action of \(\Cl(\O)\) then amounts to following a path in
+the so-called \emph{isogeny graph}, whose vertices are curves in $\Ell_t(\O)$ and edges are isogenies corresponding to ideals. 
+
+The cryptosystem parameters are
+a set \(L\) of prime ideals in \(\O\),
+an exponent bound \(K\),
+and a ``base point'' \(E_0\) in \(\Ell_t(\O)\).
+Key exchange works as follows:
+Alice samples a secret \(k_A\) from \([0,K]^L\)
+and sends \(E_A = \Walk(E_0,k_A)\) to Bob;
+Bob samples a secret \(k_B\) from \([0,K]^L\)
+and sends \(E_B = \Walk(E_0,k_B)\) to Alice.
+Their shared secret is \(E_{AB} \cong \Walk(E_A,k_B) \cong \Walk(E_B,k_A)\).
+Each \(\Walk\) (Algorithm~\ref{alg:walk})
+is a series of \(\Step\)s
+for each of the various ideals \(\frakell\) in \(L\);
+we describe two strategies for implementing \(\Step\) below,
+comparing implementations in Sage \cite{Sage} and Nemo \cite{Nemo}. 
+
+The choice of \(L\) is critical,
+because the security of the scheme grows exponentially with \(\#L\)
+(and only polynomially in \(K\)),
+but the efficiency of each \(\Step\)
+depends on the particular \(\frakell\) in~\(L\).
+For our experiments,
+we chose parameters aiming at the 128-bit security level
+(comparable with contemporary cryptosystems such as AES)
+against the best known classical attacks:
+%To fix ideas, let us give an example of parameters achieving security comparable with contemporary cryptosystems, against the best known classical attacks. 
+we take
+$p~=~2^{500} + 55$, 
+$K = 2$, 
+$E_0: y^2 = x^3 + 5x^2 + x$,
+and $L$ a set of 115 convenient primes with norms less than $1400$.
+%(out of 222),
+For each \(\frakell\) in \(L\),
+the classical modular polynomial \(\Phi_\ell(X,Y)\)
+is precomputed.
+
+\begin{algorithm}
+    \caption{{\sc Walk}: a walk in the isogeny graph}
+    \label{alg:walk}
+    \KwIn{An elliptic curve \(E\) in \(\mathrm{Ell}_t(\O)\)
+    and a vector \(k = (k_\frakell)_{\frakell \in L} \in [0,K]^L\)
+    }
+    \KwOut{An elliptic curve \(E'\) such that \(E \to E'\)
+    is an isogeny corresponding to \(\prod_{\frakell\in
+    L}\frakell^{k_\frakell}\)}
+    %
+    \For{\(\frakell \in L\)}{
+        \lFor{\(0 \le i < k_\frakell\)}{%
+            \label{alg:walk:step-call}
+            \(E \gets \textsc{Step}(E,\frakell)\)
+        }
+    }
+    \Return{\(E\)}
+\end{algorithm}
+
+
+%Note that we cannot use all primes, but only about half of them: these primes are usually called \emph{Elkies primes} in point counting. One could try to find special curves, for which more primes could are Elkies. It is a major issue since the security of the scheme grows exponentially with the length of $L$ and only polynomially with $K$, and we return to this question later on.
+
+\section{A first solution}
+
+\begin{algorithm}
+    \caption{{\sc Step}: a single step in the isogeny graph, using
+    Bostan--Morain--Salvy--Schost}
+    \label{alg:step}
+    \KwIn{%
+        $E\in \Ell_t(\O)$, 
+        a prime ideal \(\frakell \leftrightarrow (\ell,v_\ell)\)
+    }
+    \KwOut{%
+        $E'$ such that \(E \to E'\) is the edge in the isogeny graph
+        corresponding to \(\frakell\)
+    }
+    %
+    Evaluate \(F(X) = \Phi_\ell(X,j(E))\)
+    \tcp*{\(j\) is the \(j\)-invariant; \(\Phi_\ell\) is precomputed}
+    %
+    \(\{j_1,j_2\} \gets \textsc{Roots}(F,\F_p)\);
+    compute curves $E_1$, $E_2$ such that \(j_i = j(E_i)\)
+    \label{alg:step:roots}
+    \;
+    %
+    \(S_1 \gets \textsc{KernelOfIsogeny}(E,E_1,\ell)\)
+    \label{alg:step:kernel}
+    \;
+    %
+    \lIf{\((x^p \pmod{S_1}) = ([v_\ell]_*x \pmod{S_1})\)}{%
+        \Return{\(E_1\)}
+    }
+    \lElse{%
+        \Return{\(E_2\)}
+    }
+\end{algorithm}
+
+Algorithm~\ref{alg:step}
+is our first and most general implementation of \(\Step\).
+In Line~\ref{alg:step:kernel},
+we use the Bostan--Morain--Salvy--Schost algorithm \cite{BMSS}. 
+This involves finding a rational function satisfying a differential
+equation, which is solved using a Newton iteration,
+before recovering 
+the polynomials we want using the Berlekamp--Massey algorithm. 
+The cost is dominated by finding the roots of $\Phi_\ell(X, j(E))$, 
+which has degree $\ell + 1$, 
+in Line~\ref{alg:step:roots}. 
+For this, we use the Cantor--Zassenhaus algorithm, performing equal-degree factorisation only in degree 1.
+The most costly step is computing $X^p\pmod{F}$.
+We used Sage
+(which relies on NTL \cite{NTL}, PARI \cite{Pari} and GMP \cite{GMP}
+here)
+and Nemo built-ins for this common computation, 
+giving the following results
+(all timings are from a 3.20GHz Intel Xeon workstation).
+\[
+    \begin{array}{c|c|c|c|c|c|c|c|c|c}
+        \deg F & 2 & 5 & 10 & 20 & 50 & 100 & 200 & 500 & 1000\\
+        \hline
+        \text{Sage} & 40 \ms & 40 \ms & 55\ms & 70 \ms & 155\ms & 510\ms & 1.0 \s & 2.2 \s & 5.3 \s\\
+        \hline
+        \text{Nemo} & 3.5 \ms &  14 \ms & 38 \ms & 90 \ms & 220 \ms & 460 \ms & 980 \ms & 2.5 \s & 5.5 \s
+    \end{array}
+\]
+
+Sage also spends additional time in precomputations (as much as 7 minutes in the last example). While this may prove efficient when a lot of calculations are to be done in the same ring, this is not the case in our setting. Using the parameters fixed in~\S\ref{sec:intro},
+the total computing time is approximately 7 minutes for each
+\(\Walk\), with about 20 seconds spent on each of the largest primes.
+
+
+\section{Faster $\ell$-isogenies with torsion points}
+
+\begin{algorithm}
+    \caption{\(\Step\) using torsion points}
+    \label{alg:torsion}
+    \KwIn{$E\in \Ell_t(\O)$ and a prime ideal \(\frakell \leftrightarrow
+        (\ell,v_\ell)\) such that \(\ell\mid \#E(\FF_{p^d})\)
+        for a small \(d\)
+    }
+    \KwOut{%
+        \(E'\) such that \(E \to E'\) is the edge in the isogeny graph
+        corresponding to \(\frakell\)
+    }
+    %
+    \Repeat{\(Q \not= 0\) \tcp*[f]{\(Q\) is a point of exact order \(\ell\)}}{
+        \(P \gets \textsc{Random}(E(\FF_{p^d}))\)
+        \;
+        %
+        \(Q \gets [C_d/\ell]P\)
+        where \(C_d = \#E(\FF_{p^d})\)
+        \tcp*{\(C_d\) is a global constant}
+        \label{alg:torsion:scalarmult}
+    }
+    %
+    \(S \gets \{[i]Q: 1 \le i \le (\ell-1)/2\}\)
+    \tcp*{Use \((\ell-1)/2-1\) repeated additions}
+    %
+    \Return{\(\textsc{QuotientCurve}(E,S)\)}
+    \tcp*{Use Vélu's formulae}
+\end{algorithm}
+
+
+If $E$ has points of order $\ell$
+defined over \(\FF_p\), or a small-degree extension of~\(\FF_p\),
+then we may replace Algorithm~\ref{alg:step}
+with a faster method, Algorithm~\ref{alg:torsion}.
+The costly part here is the scalar multiplication in
+Line~\ref{alg:torsion:scalarmult}, assuming $\ell$ is not too large;
+typically \(C_d/\ell\sim p^d/\ell\).
+In order to optimize the number of $\F_p$-operations, we implemented it
+using Montgomery curves and \(x\)-line arithmetic~\cite{Montgomery}, 
+achieving dramatic performance gains compared to
+Algorithm~\ref{alg:step}.
+As elliptic curves are not yet supported in Nemo, we implemented our own Montgomery arithmetic. In Sage we use the built-in scalar multiplication. 
+Our timings (again on a 3.20GHz Intel Xeon workstation) are as follows:
+\[
+    \begin{array}{c|c|c|c|c|c|c|c|c|c}
+        d & 1 & 3 & 4 & 5 & 7 & 8 & 9 & 11 & 50\\
+        \hline
+        \text{Sage} & 38 \ms & 190 \ms & 270 \ms & 320 \ms & 470 \ms & 530 \ms & 610 \ms & 780 \ms & 5.7 \s\\
+        \hline
+        \text{Nemo} & 7 \ms & 23 \ms & 30 \ms & 38 \ms & 55 \ms & 65 \ms & 75 \ms & 130 \ms & 620\ms
+    \end{array}
+\]
+Further experiments show that Julia's compilation and fast arithmetic on Montgomery curves are equally reponsible for these gains.
+
+To fully exploit this speed-up, we have to find an \(E_0/\F_p\)
+such that many small primes divide \(\#E_0(\FF_{p^d})\) for small~\(d\). 
+What can be achieved in a reasonable amount of time, and what speed-up we can obtain, seem interesting questions. 
+
+
+\begin{thebibliography}{99}
+
+\bibitem{BMSS}
+A. Bostan, F. Morain, B. Salvy, \'E. Schost.
+\newblock Fast algorithms for computing isogenies between elliptic curves.
+\newblock {\em Math.~Comput.} 77:263:1755--1778 (2008).
+
+\bibitem{Couveignes}
+J.-M. Couveignes.
+\newblock Hard homogeneous spaces.
+\newblock Preprint (2006).
+
+\bibitem{Nemo}
+C. Fieker, W. Hart, T. Hofmann, F. Johansson et. al.
+\newblock the Nemo computer algebra package, version 0.6.0, \url{http://nemocas.org}.
+
+\bibitem{GMP}
+T. Granlund and the GMP development team.
+\newblock The GNU Multi Precision Arithmetic Library, \url{http://gmplib.org/}
+
+\bibitem{Montgomery}
+P. L. Montgomery.
+\newblock Speeding the Pollard and Elliptic Curve Methods of Factorization.
+\newblock {\em Math.~Comput.} 47:177:243--264 (1987).
+
+\bibitem{Pari}
+The PARI~Group.
+\newblock PARI/GP version {\tt 2.9.0}, Univ. Bordeaux, 2016, \url{http://pari.math.u-bordeaux.fr/}.
+
+\bibitem{RS}
+A. Rostovtsev, A. Stolbunov.
+\newblock Public-key cryptosystem based on isogenies.
+
+\bibitem{Sage}
+The Sage Developers.
+\newblock {S}ageMath, the {S}age {M}athematics {S}oftware {S}ystem ({V}ersion
+  7.5.1),
+\newblock 2017, \url{http://www.sagemath.org}
+
+\bibitem{NTL}
+V. Shoup.
+\newblock NTL : a library for doing number theory.
+\newblock \url{http://www.shoup.net/ntl/}
+
+%\bibitem{Waterhouse}
+%W. C. Waterhouse.
+%\newblock Abelian varieties over finite fields.
+%\newblock {\em Ann. sci. \'E.N.S.} 2:4:521--560, 1969.
+
+%\bibitem{Attack}
+%S. Galbraith.
+%\newblock Constructing isogenies between elliptic curves over finite fields.
+%\newblock {\em LMS J. Comput. Math.} 2:118--138, 1999.
+
+%\bibitem{Kohel}
+%D. Kohel.
+%\newblock Endomorphism rings of elliptic curves over finite fields.
+
+%\bibitem{Flint}
+%W. Hart, F. Johansson, S. Pancratz.
+%\newblock {FLINT}: {F}ast {L}ibrary for {N}umber {T}heory, 2013,
+%\newblock Version 2.4.0, \url{http://flintlib.org}
+
+\end{thebibliography}
+
+\end{document}
