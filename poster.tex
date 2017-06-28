@@ -9,7 +9,7 @@
 \usepackage{tikz}
 \usepackage{url}
 
-\usetikzlibrary{matrix,arrows,arrows.meta,positioning}
+\usetikzlibrary{matrix, arrows, arrows.meta, positioning}
 \tikzset{>/.tip={Computer Modern Rightarrow[scale=2,line width=1pt]}}
 \tikzset{|/.tip={Bar[scale=2,line width=1pt]}}
 \tikzset{c_/.tip={Hooks[scale=2,line width=1pt,right]}}
@@ -34,41 +34,7 @@
 
 \usetheme{Envelope}
 
-%\definecolorpalette{UVSQ}{
-%    \definecolor{colorOne}{RGB}{255,255,255}
-%    \definecolor{colorTwo}{RGB}{0,146,187}
-%    %\definecolor{colorThree}{RGB}{119,173,28}
-%}
-%\colorlet{alert}{red}
-%\usecolorstyle{Spain}
-%
-%\definetitlestyle{WLogos}{
-%    width=\paperwidth, roundedcorners=0, linewidth=0pt, innersep=1.5cm,
-%    titletotopverticalspace=0mm, titletoblockverticalspace=20mm,
-%    titlegraphictotitledistance=10pt, titletextscale=1
-%}{
-%  \draw[draw=none, bottom color=titlebgcolor, top color=framecolor,opacity=0.9]%
-%  (\titleposleft,\titleposbottom) rectangle (\titleposright,\titlepostop); %
-% \draw
-%   (\titleposleft,0.75*\titlepostop+0.25*\titleposbottom)
-%   node[anchor=west]{\includegraphics[width=15em]{uvsq-logo-cmjn}}
-%   (\titleposright-1em,0.75\titlepostop+0.25*\titleposbottom)
-%   node[anchor=east]{\includegraphics[width=15em]{western}}
-%   (\titleposleft+1em,\titleposbottom+1em)
-%   node[anchor=south west]{\includegraphics[height=5em]{Anssi}}
-%   (\titleposright-1em,\titleposbottom+1em)
-%   node[anchor=south east]{\includegraphics[height=5em]{Anssi}};
-%
-%}
-%\usetitlestyle{WLogos}
-
 \pgfmathsetseed{\number\pdfrandomseed}
-%\definebackgroundstyle{FancyBack}{
-%  \draw[opacity=0.2] (0,0) 
-%  node[rotate={random(0,359)}]{}
-  %\includegraphics[height=\textheight]{Anssi}};
-%}
-%\usebackgroundstyle{FancyBack} causes problems
 
 \begin{document}
 \maketitle
@@ -106,11 +72,58 @@ Define \emph{isogeny graphs} as follows :
 
 For ordinary elliptic curves, connected components of isogeny graphs usually have the following shape \cite{Kohel}:
 
-%Picture
-\vspace{5cm}
+\begin{center}
+%\definecolor{qqqqff}{rgb}{0,0,1}
+\begin{tikzpicture}[line cap=round,line join=round,>=triangle 45,x=4.0cm,y=4.0cm]
+
+\draw[]
+ (1, 0) node(1) {2}
+ (0.62, 0.78) node(2) {162}
+ (-0.22,0.97) node(3) {36}
+ (-0.9,0.43) node(4) {117}
+ (-0.9,-0.43) node(5) {134}
+ (-0.22,-0.97) node(6) {116}
+ (0.62,-0.78) node (7) {167};
+\draw[]
+ (1) edge[thick, blue] (2)
+ (2) edge[thick, blue] (3)
+ (3) edge[thick, blue] (4)
+ (4) edge[thick, blue] (5)
+ (5) edge[thick, blue] (6)
+ (6) edge[thick, blue] (7)
+ (7) edge[thick, blue] (1);
+\draw[]
+ (1) edge[thick, red] (3)
+ (3) edge[thick, red] (5)
+ (5) edge[thick, red] (7)
+ (7) edge[thick, red] (2)
+ (2) edge[thick, red] (4)
+ (4) edge[thick, red] (6)
+ (6) edge[thick, red] (1);
+\draw[]
+ (1,0) circle (25pt)
+ (0.62,0.78) circle (25pt)
+ (-0.22,0.97) circle (25pt)
+ (-0.9,0.43) circle (25pt)
+ (-0.9,-0.43) circle (25pt)
+ (-0.22,-0.97) circle (25pt)
+ (0.62,-0.78) circle (25pt);
+
+\end{tikzpicture}
+\end{center}
+
+\begin{center}
+\small Isogeny graph over $\F_{173}$ : blue edges are 3-isogenies, red edges are 7-isogenies
+\end{center}
 
 \paragraph{Action of a class group}
-Let $E/\F_p$ be an ordinary elliptic curve. The ring $\End(E)$ is isomorphic to an order $\O$ in a quadratic imaginary field. The class group of $\O$ acts simply transitively on the set of elliptic curves with endomorphism ring $\O$.
+Let $E/\F_p$ be an ordinary elliptic curve.
+\begin{itemize}
+\item
+The ring $\End(E)$ is isomorphic to an order $\O$ in a quadratic imaginary field.
+\item
+The class group of $\O$ acts simply transitively on the set of elliptic curves with endomorphism ring $\O$.
+\end{itemize}
 
 \paragraph{Representation of ideals} Let $\mathfrak{l}$ be an ideal in $\O$ of prime norm $\ell$. Let $\pi\in\O$ be the Frobenius endomorphism. Then 
 $$\O/\mathfrak{l} \simeq \Z/\ell\Z.$$
@@ -119,14 +132,16 @@ Call $v = \pi \mod{\mathfrak{l}}$ a \emph{Frobenius eigenvalue}. The ideal $\mat
 
 \block{Cryptosystem construction}{
 \paragraph{General setting}
-Let $G$ be a finite abelian group, and let $X$ be a set with a fixed point $x_0$ on which $G$ acts simply transitively. Define an analogue of the Diffie--Hellman key exchange protocol \cite{Couv}:
+Let $G$ be a finite abelian group, and let $X$ be a (big) set with a fixed point $x_0$ on which $G$ acts simply transitively. Define an analogue of the Diffie--Hellman key exchange protocol \cite{Couv}:
 
 \begin{center}
  \begin{tikzpicture}[node distance=6em]
-  \node(ab){$(ab) \star x_0$};
-  \node(a)[above left of=ab]{$a\star x_0$};
-  \node(b)[above right of=ab]{$b\star x_0$};
-  \node(id)[above left of=b]{$x_0$};
+  \node(ab) [color=purple] {$(ab) \star x_0$};
+  \node(a) [above left of=ab, color=blue] {$a\star x_0$};
+  \node(b) [above right of=ab, color=blue] {$b\star x_0$};
+  \node(id) [above left of=b, color=blue] {$x_0$};
+  \node(p) [below right of=b, color=purple] {shared secret};
+  \node(P) [above of=p, color=blue] {public};
   \draw[]
    (ab) edge[auto] node{$b$} (a)
    (b) edge[auto] node{$a$} (ab)
@@ -138,9 +153,12 @@ Let $G$ be a finite abelian group, and let $X$ be a set with a fixed point $x_0$
 Use this general construction for the action above \cite{RoSt}.
 
 \paragraph{Random sampling}
-For cryptographic-size parameters, the structure of the class group is unknown. Use a random walk in the isogeny graph instead : under the GRH, it comes close to the uniform distribution \cite{GRH}.
-
-\paragraph{Goal} For various primes $\ell$, compute efficiently the action of an ideal of prime norm $(\ell, v)$ on a curve $E$ : that is, $\ell$-isogenies with domain $E$.
+For cryptographic-size parameters, the structure of the class group is unknown. Use a random walk in the isogeny graph to generate $a$ and $b$ : for each $\ell$ used,
+\begin{itemize}
+\item Choose a random $k\leq $ some bound $B_\ell$,
+\item Walk $k$ steps in the $\ell$-isogeny graph.
+\end{itemize}
+Close to uniform under GRH \cite{GRH}.
 }
 
 %Second column
@@ -153,18 +171,40 @@ The modular polynomial $\Phi_\ell(X, Y)$ has the following property : the roots 
 $$\Phi_\ell(j(E), Y)$$
 in $\F_p$ classify the neighbors of $E$ in the $\ell$-isogeny graph.
 
-\paragraph{Two roots} In our setting we find two neighbors. To choose the one corresponding to an ideal $(\ell, v)$, compute the kernel of this isogeny : it is a $\Z/\ell\Z$-vector space of dimension one stable under the Frobenius endomorphism of $E$. Its eigenvalue must be $v$.
+\paragraph{Algorithm} To compute $(\ell, v) \star E$ :
+\begin{itemize}
+\item Compute $\Phi_\ell(j(E), Y)$ ($\Phi_\ell$ is precomputed)
+\item Compute its roots $j_1, j_2$ in $\F_p$ (always two)
+\item Choose the right neighbor :
+\begin{itemize}
+\item Compute the kernel of this isogeny
+\item It is stable under Frobenius : eigenvalue must be $v$.
+\end{itemize}
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[node distance = 5em]
+\draw node(u) {$j(E)$};
+\draw node(l) [below left of=u] {$j_1$};
+\draw node(r) [below right of=u] {$j_2$};
+\draw[->, >=latex] (u) edge[above right, bend left] node{$(\ell, v_2)$} (r);
+\draw[->, >=latex] (u) edge[above left, bend right] node{$(\ell, v_1)$} (l);
+\end{tikzpicture}
+\end{center}
+
 }
 
 \block{Finding the kernel}{
 \paragraph{Bostan--Morain--Salvy--Schost~\cite{BMSS}} Suppose $\ell$ is odd. A $\ell$-isogeny $\phi$ may be written
 $$\phi(x, y) = \left(\frac{N(x)}{D^2(x)},\ cy \left( \frac{N}{D^2}\right)'(x) \right)$$
-The polynomial $D$ defines $\Ker(\phi)$. The rational fraction
-$$U(X) = \frac{N(1/X)}{D(1/X)}$$
-satisfies a differential equation that is solved efficiently with a Newton iteration.
-At the end, recover the polynomial $D$ using the Berlekamp--Massey rational reconstruction algorithm.
+The polynomial $D$ defines $\Ker(\phi)$.
+\begin{itemize}
+\item Compute $c$ using modular polynomials,
+\item Solve a differential equation ef power series with Newton iterations up to some precision,
+\item Recover $D$ with Berlekamp--Massey.
+\end{itemize}
 
-Remark that we know of no quasi-optimal algorithm when low characteristic prevents from using BMSS.
+Additional difficulties appear in low characteristic \cite{16}.
 
 \paragraph{Computing the eigenvalue} In the ring $\F_p[x, y]/(D, E)$, where $E$ denotes the curve equation, check the equality
 $$[v] (x, y) = (x^p, y^p).$$
@@ -178,10 +218,18 @@ where $Q$ has degree $\ell$. This is the costly operation both in theory and pra
 
 \paragraph{Timing results} The following measurements for this operation were made on a 3.20GHz Intel Xeon workstation, using the Nemo~\cite{Nemo}, Sage~\cite{Sage} and PARI~\cite{PARI} built-ins. Sage relies on PARI, GMP~\cite{GMP} and NTL~\cite{NTL} here.
 
-%Graph
-\vspace{5cm}
+\begin{center}
+\begin{tikzpicture}
+\draw[very thick, blue] plot[xscale=4, yscale=1] file {sagemod.txt};
+\draw[very thick, green] plot[xscale=4, yscale=1] file {parimod.txt};
+\draw[very thick, red] plot[xscale=4, yscale=1] file {nemomod.txt};
+\draw[gray, very thin] (0,0) grid[xstep = 20, ystep = 2] (20, 16);
+\end{tikzpicture}
+\end{center}
 
-\paragraph{Total cost} Aiming for reasonable security, we obtain a complete walk in the isogeny graph in approximately 7 minutes, with 20 seconds spent on each of the largest primes.
+\paragraph{Total cost} Aiming for reasonable security :
+$$ p = 2^{502} + 49$$
+Complete walk in the isogeny graph in approximately 7 minutes, with 20 seconds spent on each of the largest primes.
 }
 
 %Third column
@@ -198,17 +246,24 @@ defined over $\F_p$. Proceed as follows :
 \item Use V\'elu's formul\ae\ to find the isogenous curve.
 \end{itemize}
 
-\paragraph{Cost analysis} If $\ell$ is not too large, the scalar multiplication dominates. Using Montgomery curves here brings practical improvements. We implemented our own Montgomery and generic arithmetic in Nemo, and used built-in scalar multiplication in Sage.
+\paragraph{Cost analysis} If $\ell$ is not too large, the scalar multiplication dominates. Using Montgomery curves here brings practical improvements \cite{Montgomery}. We implemented our own Montgomery and generic arithmetic in Nemo, and used built-in scalar multiplication in Sage.
 
 \paragraph{Timing results} Again the workstation runs a 3.20GHz Intel Xeon.
 
-%graph
-\vspace{5cm}
-}
+\begin{center}
+\begin{tikzpicture}
 
-%\block{Implementation}{
-%
-%}
+\draw[]
+ plot[xscale=4, yscale=1, color=blue] file {sagetors.txt}
+ plot[xscale=4, yscale=1, color=green] file {generic.txt}
+ plot[xscale=4, yscale=1, color=red] file {montgomery.txt};
+
+\draw[gray, very thin] (0,0) grid[xstep = 20, ystep = 2] (20, 16);
+
+\end{tikzpicture}
+
+\end{center}
+}
 
 \block{Parameter determination}{
 \paragraph{Exploiting the speed-up} The goal is now to find an $E_0/\F_p$ such that many small primes divide $\# E_0(\F_{p^d})$ for small $d$. We use an exhaustive search strategy :
