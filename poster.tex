@@ -50,7 +50,7 @@ Let $p$ be a prime number. An \emph{elliptic curve} $E/\F_p$ is a smooth algebra
 \begin{itemize}
 \item \emph{Weierstrass equations} : $\O_E$ at infinity,
 $$E\ :\ y^2 = x^3 + ax + b,\quad 4a^3-27b^2\neq 0$$
-\item \emph{Montgomery equations} : $\O_E$ at infinity,
+\item \emph{Montgomery equations} \cite{Montgomery} : $\O_E$ at infinity,
 $$E\ :\ B y^2 = x^3 + Ax^2 + x,\quad B(A^2-4)\neq 0.$$
 
 \end{itemize}
@@ -64,13 +64,12 @@ that is also a morphism of abelian groups. Call \emph{$\ell$-isogeny} an isogeny
 }
 
 \block{Isogeny graphs}{
-Define \emph{isogeny graphs} as follows :
 \begin{itemize}
 \item Vertices are elliptic curves over $\F_p$ up to isomorphism,
 \item Edges are isogenies linking them.
 \end{itemize}
 
-For ordinary elliptic curves, connected components of isogeny graphs usually have the following shape \cite{Kohel}:
+For ordinary elliptic curves, typical shape \cite{Kohel}:
 
 \begin{center}
 %\definecolor{qqqqff}{rgb}{0,0,1}
@@ -187,8 +186,8 @@ in $\F_p$ classify the neighbors of $E$ in the $\ell$-isogeny graph.
 \draw node(u) {$j(E)$};
 \draw node(l) [below left of=u] {$j_1$};
 \draw node(r) [below right of=u] {$j_2$};
-\draw[->, >=latex] (u) edge[above right, bend left] node{$(\ell, v_2)$} (r);
-\draw[->, >=latex] (u) edge[above left, bend right] node{$(\ell, v_1)$} (l);
+\draw[->] (u) edge[above right, bend left] node{$(\ell, v_2)$} (r);
+\draw[->] (u) edge[above left, bend right] node{$(\ell, v_1)$} (l);
 \end{tikzpicture}
 \end{center}
 
@@ -200,36 +199,50 @@ $$\phi(x, y) = \left(\frac{N(x)}{D^2(x)},\ cy \left( \frac{N}{D^2}\right)'(x) \r
 The polynomial $D$ defines $\Ker(\phi)$.
 \begin{itemize}
 \item Compute $c$ using modular polynomials,
-\item Solve a differential equation ef power series with Newton iterations up to some precision,
+\item Solve a differential equation of power series with Newton iterations,
 \item Recover $D$ with Berlekamp--Massey.
 \end{itemize}
 
-Additional difficulties appear in low characteristic \cite{16}.
+Additional difficulties appear in low characteristic \cite{Issac16}. 
 
-\paragraph{Computing the eigenvalue} In the ring $\F_p[x, y]/(D, E)$, where $E$ denotes the curve equation, check the equality
+\paragraph{Computing the eigenvalue} In $\F_p[x, y]/(D, E)$, where $E$ denotes the curve equation, check
 $$[v] (x, y) = (x^p, y^p).$$
-LHS is scalar multiplication on the elliptic curve.
+LHS is scalar multiplication on the elliptic curve. Used in the Schoof--Atkin--Elkies algorithm in point counting \cite{Schoof}.
 }
 
 \block{Cost analysis}{
-\paragraph{Costly steps} Both finding roots of modular polynomials, using the Cantor--Zassenhaus algorithm, and computing the eigenvalue involve computing
-$$X^p \mod{Q}$$
+\paragraph{Costly steps} Both finding roots with Cantor--Zassenhaus and computing eigenvalues involve computing
+$$X^p \mod{Q(X)}$$
 where $Q$ has degree $\ell$. This is the costly operation both in theory and practice. 
 
-\paragraph{Timing results} The following measurements for this operation were made on a 3.20GHz Intel Xeon workstation, using the Nemo~\cite{Nemo}, Sage~\cite{Sage} and PARI~\cite{PARI} built-ins. Sage relies on PARI, GMP~\cite{GMP} and NTL~\cite{NTL} here.
+\paragraph{Timing results} 3.20GHz Intel Xeon workstation, using the Nemo~\cite{Nemo}, Sage~\cite{Sage} and PARI~\cite{PARI} built-ins. Sage relies on PARI, GMP~\cite{GMP} and NTL~\cite{NTL} here. Reasonable security : $ p = 2^{502} + 49.$
 
 \begin{center}
-\begin{tikzpicture}
-\draw[very thick, blue] plot[xscale=4, yscale=1] file {sagemod.txt};
-\draw[very thick, green] plot[xscale=4, yscale=1] file {parimod.txt};
-\draw[very thick, red] plot[xscale=4, yscale=1] file {nemomod.txt};
-\draw[gray, very thin] (0,0) grid[xstep = 20, ystep = 2] (20, 16);
+\begin{tikzpicture}[x = 0.037cm, y=3cm]
+\draw[very thick, blue] plot file {sagemod.txt};
+\draw[very thick, green] plot file {parimod.txt};
+\draw[very thick, red] plot file {nemomod.txt};
+\draw[color=gray!50, very thin] (0,0) grid[xstep = 100, ystep = 0.5] (500, 5);
+\foreach \k in {0,100,...,500}
+ \draw  (\k, -0.3) node  {\small\k};
+ 
+\foreach \t in {0,0.5,...,5}
+ \draw (-30, \t) node {\small \t};
+ 
+\draw[->] (0,0) -- (0, 5.3);
+\draw[->] (0,0) -- (520, 0);
+\draw (550, 0) node {$d$};
+\draw (0, 5.5) node {$t\ (s)$};
 \end{tikzpicture}
+
+\small{$X^p \mod{Q(X)}$ with $\deg(Q) = d$ in $\F_p$ using 
+\textcolor{blue}{Sage},
+\textcolor{red}{Nemo} and 
+\textcolor{green}{PARI}.}
+
 \end{center}
 
-\paragraph{Total cost} Aiming for reasonable security :
-$$ p = 2^{502} + 49$$
-Complete walk in the isogeny graph in approximately 7 minutes, with 20 seconds spent on each of the largest primes.
+\paragraph{Total cost} Complete walk in the isogeny graph in approximately 7 minutes, with 20 seconds spent on each of the largest primes.
 }
 
 %Third column
@@ -238,44 +251,68 @@ Complete walk in the isogeny graph in approximately 7 minutes, with 20 seconds s
 
 \block{Speeding computations with torsion points}{
 \paragraph{An alternative method}
-Supopse $E$ has points of order $\ell$
-defined over $\F_p$. Proceed as follows :
+If $E$ has points of order $\ell$
+defined over $\F_p$ (also works with small extensions):
 \begin{itemize}
-\item Choose a random point $P$ in $E(\F_p)$,
-\item $Q \gets [C/\ell]P$ until $Q\neq \O_E$, where $C = \#E(\F_p)$
-\item Use V\'elu's formul\ae\ to find the isogenous curve.
+\item $P$ random in $E(\F_p)$, $Q \gets [C/\ell]P$ until $Q\neq \O_E$ (where $C = \#E(\F_p)$)
+\item Compute $S = \{[i]Q\ :\ 0\leq i\leq \ell-1\}$
+\item Use V\'elu's formul\ae\ to find the isogenous curve $E/S$.
 \end{itemize}
 
-\paragraph{Cost analysis} If $\ell$ is not too large, the scalar multiplication dominates. Using Montgomery curves here brings practical improvements \cite{Montgomery}. We implemented our own Montgomery and generic arithmetic in Nemo, and used built-in scalar multiplication in Sage.
-
-\paragraph{Timing results} Again the workstation runs a 3.20GHz Intel Xeon.
+\paragraph{Cost analysis} If $\ell$ is not too large, the scalar multiplication dominates. Again 3.20GHz Intel Xeon.
 
 \begin{center}
-\begin{tikzpicture}
+\begin{tikzpicture}[x = 1.8cm, y=6cm]
 
-\draw[]
- plot[xscale=4, yscale=1, color=blue] file {sagetors.txt}
- plot[xscale=4, yscale=1, color=green] file {generic.txt}
- plot[xscale=4, yscale=1, color=red] file {montgomery.txt};
-
-\draw[gray, very thin] (0,0) grid[xstep = 20, ystep = 2] (20, 16);
-
+\draw[very thick, blue] plot file {sagetors.txt};
+\draw[very thick, red] plot file {generic.txt};
+\draw[very thick, green] plot file {montgomery.txt};
+\draw[color=gray!50, very thin] (1,0) grid[xstep = 1, ystep = 0.25] (10, 2);
+\foreach \k in {1,2,...,10}
+ \draw  (\k, -0.1) node  {\small\k};
+ 
+\foreach \t in {0,0.25,...,2}
+ \draw (0.4, \t) node {\small \t};
+ 
+\draw[->] (1,0) -- (1, 2.2);
+\draw[->] (1,0) -- (10.5, 0);
+\draw (11, 0) node {$d$};
+\draw (1, 2.35) node {$t\ (s)$};
 \end{tikzpicture}
 
+\small $[p^d] P$ for $P \in E(\F_{p^d})$ using
+\textcolor{blue}{Sage built-in},
+\textcolor{red}{generic arithmetic in Nemo} and
+\textcolor{green}{Montgomery arithmetic in Nemo}
+
 \end{center}
-}
 
-\block{Parameter determination}{
-\paragraph{Exploiting the speed-up} The goal is now to find an $E_0/\F_p$ such that many small primes divide $\# E_0(\F_{p^d})$ for small $d$. We use an exhaustive search strategy :
+\paragraph{Exploiting the speed-up} Find an $E_0/\F_p$ s.t. many small primes divide $\# E_0(\F_{p^d})$ for small $d$ : SEA is expensive so select good candidates.
 \begin{itemize}
-\item Generate candidates using a simple equation of a certain modular curve, for example the hyperelliptic $X_0(30)$.
-\item Test if rational $\ell$-torsion is present for some small primes $\ell$, computing Frobenius eigenvalues as before.
-\item If these tests passed, compute the cardinality in full using the Schoof--Atkin--Elkies algorithm and keep the best curves.
+\item Use modular curves, e.g. the hyperelliptic $X_0(30)$
+\item Test for rational $\ell$-torsion for small $\ell$'s, as before.
+\item Then compute $\#E(\F_p)$ with SEA and keep the best.
 \end{itemize}
-This method is designed to balance the costs, as computing the cardinality is time-consuming, and is much more efficient than using higher-level modular equations.
 
-\paragraph{Results} We managed to reach 20 primes dividing $\#E(\F_{p^d})$ for $d\leq 10$.
+\paragraph{Results} $E/\F_p$, $p = 2^{502} + 49$ s.t.
+\begin{itemize}
+\item  2, 3, 13, 19, 29, 59, 179, 199 divide $\#E(\F_p)$,
+\item 7, 11, 17, 67, 281, 491, 1297 divide $\#E(\F_{p^2}), \ldots$
+\end{itemize}
+Total cost for a walk is now \ldots
+
 }
+
+\block{Elliptic Curves in Nemo}{
+On \url{github.com/defeo/EllipticCurves.jl} :
+\begin{itemize}
+\item Weierstrass and Montgomery equations \& arithmetic, isomorphisms
+\item Isogenies, Vélu formul\ae, BMSS algorithm
+\item Over finite fields : field extensions, random points, torsion points \ldots
+\end{itemize}
+}
+
+
 
 \block{\refname}{
 	\small
