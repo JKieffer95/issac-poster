@@ -27,7 +27,7 @@
 \renewcommand{\paragraph}[1]{\smallskip\textbf{#1.}}
 \newcommand{\secblock}[1]{\block[]{}{\huge\sc #1}}
 
-\title{Isogeny-based cryptography in Nemo : a case study}
+\title{Isogeny-based cryptography in Nemo: a case study}
 \author{Jean Kieffer\footnotemark[1], Luca De Feo\footnotemark[2]}
 
 \institute{\normalsize \footnotemark[1] \'Ecole normale sup\'erieure de Paris \& INRIA, Université Paris--Saclay
@@ -78,16 +78,16 @@
 %First column
 
 \block{Elliptic curves over $\F_p$}{
-Let $p$ be a prime number. An \emph{elliptic curve} $E/\F_p$ is a smooth algebraic curve of genus one defined over $\F_p$, with a rational point $\O_E$. Examples :
+Let $p$ be a prime number. An \emph{elliptic curve} $E/\F_p$ is a smooth algebraic curve of genus one defined over $\F_p$, with a rational point $\O_E$. Examples:
 \begin{itemize}
-\item \emph{Weierstrass equations} : $\O_E$ at infinity,
+\item \emph{Weierstrass equations}: $\O_E$ at infinity,
 $$E\ :\ y^2 = x^3 + ax + b,\quad 4a^3-27b^2\neq 0$$
-\item \emph{Montgomery equations} \cite{Montgomery} : $\O_E$ at infinity,
+\item \emph{Montgomery equations} \cite{Montgomery}: $\O_E$ at infinity,
 $$E\ :\ B y^2 = x^3 + Ax^2 + x,\quad B(A^2-4)\neq 0.$$
 
 \end{itemize}
 
-$E(\F_{p^r})$ is an abelian group with neutral element $\O_E$ : provides lots of algebraic groups (cf. ECM for factoring, DLP on elliptic curves)
+$E(\F_{p^r})$ is an abelian group with neutral element $\O_E$: provides lots of algebraic groups (cf. ECM for factoring, DLP on elliptic curves)
 
 \paragraph{Isogenies}
 An \emph{isogeny} between elliptic curves is a nonzero rational map
@@ -98,10 +98,10 @@ that is also a morphism of abelian groups. Call \emph{$\ell$-isogeny} an isogeny
 \block{Isogeny graphs}{
 \begin{itemize}
 \item Vertices are elliptic curves over $\F_p$ up to isomorphism,
-\item Edges are isogenies linking them.
+\item Edges are isogenies of some fixed degrees linking them.
 \end{itemize}
 
-For ordinary elliptic curves, typical shape \cite{Kohel}:
+For \emph{ordinary} elliptic curves, typical shape \cite{Kohel}:
 
 \begin{center}
 %\definecolor{qqqqff}{rgb}{0,0,1}
@@ -144,7 +144,7 @@ For ordinary elliptic curves, typical shape \cite{Kohel}:
 \end{center}
 
 \begin{center}
-\small Isogeny graph over $\F_{173}$ : blue edges are 3-isogenies, red edges are 7-isogenies
+\small $(3,7)$-isogeny graph over $\F_{173}$. 3-isogenies in blue, 7-isogenies in red.
 \end{center}
 
 \paragraph{Action of a class group}
@@ -184,12 +184,12 @@ Let $G$ be a finite abelian group, and let $X$ be a (big) set with a fixed point
 Use this general construction for the action above \cite{RoSt}.
 
 \paragraph{Random sampling}
-For cryptographic-size parameters, the structure of the class group is unknown. Use a random walk in the isogeny graph to generate $a$ and $b$~: for each $\ell$ used,
+For cryptographic-size parameters, the structure of the class group is unknown. Use a random walk in the isogeny graph to generate $a$ and $b$: for each degree $\ell$ in the isogeny graph,
 \begin{itemize}
 \item Choose a random $k\leq $ some bound $B_\ell$,
 \item Walk $k$ steps in the $\ell$-isogeny graph.
 \end{itemize}
-Close to uniform under GRH \cite{GRH}.
+Distribution on $a,b$ close to uniform (under GRH \cite{GRH}).
 }
 
 %Second column
@@ -198,18 +198,18 @@ Close to uniform under GRH \cite{GRH}.
 
 \block{Isogeny computations}{
 \paragraph{Modular polynomials}
-The modular polynomial $\Phi_\ell(X, Y)$ has the following property~: the roots of
+The modular polynomial $\Phi_\ell(X, Y)$ has the following property: the roots of
 $$\Phi_\ell(j(E), Y)$$
-in $\F_p$ classify the neighbors of $E$ in the $\ell$-isogeny graph.
+in $\F_p$ are the neighbors of $E$ in the $\ell$-isogeny graph.
 
-\paragraph{Algorithm} To compute $(\ell, v) \star E$ :
+\paragraph{Algorithm} To compute $(\ell, v) \star E$:
 \begin{itemize}
 \item Compute $\Phi_\ell(j(E), Y)$ ($\Phi_\ell$ is precomputed)
 \item Compute its roots $j_1, j_2$ in $\F_p$ (always two)
-\item Choose the right neighbor :
+\item Choose the neighbor corresponding to $(\ell, v)$:
 \begin{itemize}
-\item Compute the kernel of this isogeny
-\item It is stable under Frobenius : eigenvalue must be $v$.
+\item \textbf{Compute the kernel of the isogeny $j\to j_i$;}
+\item It is stable under Frobenius: eigenvalue must be $v$.
 \end{itemize}
 \end{itemize}
 
@@ -226,7 +226,7 @@ in $\F_p$ classify the neighbors of $E$ in the $\ell$-isogeny graph.
 }
 
 \block{Finding the kernel}{
-\paragraph{Bostan--Morain--Salvy--Schost~\cite{BMSS}} Suppose $\ell$ is odd. A $\ell$-isogeny $\phi$ may be written
+\paragraph{Bostan--Morain--Salvy--Schost~\cite{BMSS}} Suppose $\ell$ is odd. An $\ell$-isogeny $\phi$ may be written
 $$\phi(x, y) = \left(\frac{N(x)}{D^2(x)},\ cy \left( \frac{N}{D^2}\right)'(x) \right)$$
 The polynomial $D$ defines $\Ker(\phi)$.
 \begin{itemize}
@@ -235,7 +235,7 @@ The polynomial $D$ defines $\Ker(\phi)$.
 \item Recover $D$ with Berlekamp--Massey.
 \end{itemize}
 
-Additional difficulties appear in low characteristic \cite{Issac16}. 
+Additional difficulties appear in low characteristic \cite{lercier+sirvent08,Issac16}. 
 
 \paragraph{Computing the eigenvalue} In $\F_p[x, y]/(D, E)$, where $E$ denotes the curve equation, check
 $$[v] (x, y) = (x^p, y^p).$$
@@ -244,10 +244,10 @@ LHS is scalar multiplication on the elliptic curve. Used in the Schoof--Atkin--E
 
 \block{Cost analysis}{
 \paragraph{Costly steps} Both finding roots with Cantor--Zassenhaus and computing eigenvalues involve computing
-$$X^p \mod{Q(X)}$$
+$$X^p \mod{Q(X)},$$
 where $Q$ has degree $\ell$. This is the costly operation both in theory and practice. 
 
-\paragraph{Timing results} 3.20GHz Intel Xeon workstation, using the Nemo~\cite{Nemo}, Sage~\cite{Sage} and PARI~\cite{PARI} built-ins. Sage relies on PARI, GMP~\cite{GMP} and NTL~\cite{NTL} here. Reasonable security~: $ p = 2^{502} + 49.$
+\paragraph{Timing results} 3.20GHz Intel Xeon workstation, using the Nemo~\cite{Nemo}, Sage~\cite{Sage} and PARI~\cite{PARI} built-ins. Sage relies on PARI, GMP~\cite{GMP} and NTL~\cite{NTL} here. Reasonable security: $ p = 2^{502} + 49.$
 
 \begin{center}
 \begin{tikzpicture}[x = 0.037cm, y=3cm]
@@ -274,7 +274,9 @@ where $Q$ has degree $\ell$. This is the costly operation both in theory and pra
 
 \end{center}
 
-\paragraph{Total cost} A walk in the isogeny graph is 880$s$, approx. 12$s$ spent with each prime $\ell$ up to 907. We can do better if the initial curve has more Elkies primes.
+\paragraph{Total cost} A walk in the isogeny graph is 880$s$, approx. 12$s$ spent with each prime $\ell$ up to 907.
+
+\paragraph{Idea} We can do better if the initial curve has more Elkies primes.
 }
 
 %Third column
@@ -319,7 +321,7 @@ defined over $\F_p$ (also works with small extensions):
 
 \end{center}
 
-\paragraph{Exploiting the speed-up} Find an $E_0/\F_p$ s.t. many small primes divide $\# E_0(\F_{p^d})$ for small $d$ : SEA is expensive so select good candidates.
+\paragraph{Exploiting the speed-up} Find an $E_0/\F_p$ s.t. many small primes divide $\# E_0(\F_{p^d})$ for small $d$: SEA is expensive so select good candidates.
 \begin{itemize}
 \item Use modular curves, e.g. the hyperelliptic $X_0(30)$
 \item Test for rational $\ell$-torsion for small $\ell$'s, as before.
@@ -336,11 +338,11 @@ Total cost for a walk is now approx. 360$s$, 6$s$ spent on each prime up to 521.
 }
 
 \block{Elliptic Curves in Nemo}{
-On \url{github.com/defeo/EllipticCurves.jl} :
+On \url{github.com/defeo/EllipticCurves.jl}:
 \begin{itemize}
 \item Weierstrass and Montgomery models, isomorphisms
 \item Isogenies, Vélu formul\ae, BMSS algorithm
-\item Over finite fields : field extensions, random points, torsion points \ldots
+\item Over finite fields: field extensions, random points, torsion points \ldots
 \end{itemize}
 }
 
