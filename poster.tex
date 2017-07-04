@@ -27,12 +27,44 @@
 \renewcommand{\paragraph}[1]{\smallskip\textbf{#1.}}
 \newcommand{\secblock}[1]{\block[]{}{\huge\sc #1}}
 
-\title{Isogeny-based cryptography in Julia/Nemo : a case study}
-\author{Jean Kieffer\footnotemark[1], Luca De Feo\footnotemark[2]}\institute{\footnotemark[1]\'Ecole normale sup\'erieure de Paris
-  \footnotemark[2]Université
-  de Versailles -- Saint-Quentin-en-Yvelines}
+\title{Isogeny-based cryptography in Nemo : a case study}
+\author{Jean Kieffer\footnotemark[1], Luca De Feo\footnotemark[2]}
 
-\usetheme{Envelope}
+\institute{\normalsize \footnotemark[1] \'Ecole normale sup\'erieure de Paris \& INRIA, Université Paris--Saclay
+  \quad
+  \footnotemark[2] Université
+  de Versailles -- Saint-Quentin-en-Yvelines \& INRIA, Université Paris--Saclay}
+
+\definecolor{darkgreen}{RGB}{0, 150, 0}
+
+\usetheme{Basic}
+\definecolorpalette{UVSQ}{
+    \definecolor{colorOne}{RGB}{255, 255, 255}
+    \definecolor{colorTwo}{RGB}{150, 20 , 0}
+    %\definecolor{colorThree}{RGB}{0, 0, 0}
+}
+\usecolorstyle[colorPalette=UVSQ]{Britain}
+
+
+
+\definetitlestyle{WLogos}{
+    width=\paperwidth, roundedcorners=0, linewidth=0pt, innersep=1.5cm,
+    titletotopverticalspace=0mm, titletoblockverticalspace=20mm,
+    titlegraphictotitledistance=10pt, titletextscale=1
+}{
+   \draw[draw=none, bottom color=white, top color=white, opacity=1]
+   (\titleposleft,\titleposbottom) rectangle (\titleposright,\titlepostop); 
+   \draw
+   (\titleposleft+1em,\titlepostop-1em)
+   node[anchor=north west]{\includegraphics[width=15em]{logo_ens}}
+   (\titleposright-1em,\titlepostop-1em)
+   node[anchor=north east]{\includegraphics[width=15em]{logo_uvsq}}
+   (\titleposleft+1em,\titleposbottom+1em)
+   node[anchor=south west]{\includegraphics[width=15em]{logo_inria}}
+   (\titleposright-1em,\titleposbottom+1em)
+   node[anchor=south east]{\includegraphics[width=15em]{logo_inria}};
+}
+\usetitlestyle{WLogos}
 
 \pgfmathsetseed{\number\pdfrandomseed}
 
@@ -124,9 +156,9 @@ The ring $\End(E)$ is isomorphic to an order $\O$ in a quadratic imaginary field
 The class group of $\O$ acts simply transitively on the set of elliptic curves with endomorphism ring $\O$.
 \end{itemize}
 
-\paragraph{Representation of ideals} Let $\mathfrak{l}$ be an ideal in $\O$ of prime norm $\ell$. Let $\pi\in\O$ be the Frobenius endomorphism. Then 
+\paragraph{Representation of ideals} Let $\mathfrak{l}$ be an ideal in $\O$ of prime norm $\ell$. Then 
 $$\O/\mathfrak{l} \simeq \Z/\ell\Z.$$
-Call $v = \pi \mod{\mathfrak{l}}$ a \emph{Frobenius eigenvalue}. The ideal $\mathfrak{l}$ is now determined by $(\ell, v)$, and acts as an $\ell$-isogeny.
+Let $\pi\in\O$ be the Frobenius endomorphism. Call $v~=~\pi~\mod{\mathfrak{l}}$ a \emph{Frobenius eigenvalue}. The ideal $\mathfrak{l}$ is now determined by $(\ell, v)$, and acts as an $\ell$-isogeny. Such $\ell$'s are called \emph{Elkies primes}.
 }
 
 \block{Cryptosystem construction}{
@@ -152,7 +184,7 @@ Let $G$ be a finite abelian group, and let $X$ be a (big) set with a fixed point
 Use this general construction for the action above \cite{RoSt}.
 
 \paragraph{Random sampling}
-For cryptographic-size parameters, the structure of the class group is unknown. Use a random walk in the isogeny graph to generate $a$ and $b$ : for each $\ell$ used,
+For cryptographic-size parameters, the structure of the class group is unknown. Use a random walk in the isogeny graph to generate $a$ and $b$~: for each $\ell$ used,
 \begin{itemize}
 \item Choose a random $k\leq $ some bound $B_\ell$,
 \item Walk $k$ steps in the $\ell$-isogeny graph.
@@ -166,7 +198,7 @@ Close to uniform under GRH \cite{GRH}.
 
 \block{Isogeny computations}{
 \paragraph{Modular polynomials}
-The modular polynomial $\Phi_\ell(X, Y)$ has the following property : the roots of
+The modular polynomial $\Phi_\ell(X, Y)$ has the following property~: the roots of
 $$\Phi_\ell(j(E), Y)$$
 in $\F_p$ classify the neighbors of $E$ in the $\ell$-isogeny graph.
 
@@ -215,12 +247,12 @@ LHS is scalar multiplication on the elliptic curve. Used in the Schoof--Atkin--E
 $$X^p \mod{Q(X)}$$
 where $Q$ has degree $\ell$. This is the costly operation both in theory and practice. 
 
-\paragraph{Timing results} 3.20GHz Intel Xeon workstation, using the Nemo~\cite{Nemo}, Sage~\cite{Sage} and PARI~\cite{PARI} built-ins. Sage relies on PARI, GMP~\cite{GMP} and NTL~\cite{NTL} here. Reasonable security : $ p = 2^{502} + 49.$
+\paragraph{Timing results} 3.20GHz Intel Xeon workstation, using the Nemo~\cite{Nemo}, Sage~\cite{Sage} and PARI~\cite{PARI} built-ins. Sage relies on PARI, GMP~\cite{GMP} and NTL~\cite{NTL} here. Reasonable security~: $ p = 2^{502} + 49.$
 
 \begin{center}
 \begin{tikzpicture}[x = 0.037cm, y=3cm]
 \draw[very thick, blue] plot file {sagemod.txt};
-\draw[very thick, green] plot file {parimod.txt};
+\draw[very thick, darkgreen] plot file {parimod.txt};
 \draw[very thick, red] plot file {nemomod.txt};
 \draw[color=gray!50, very thin] (0,0) grid[xstep = 100, ystep = 0.5] (500, 5);
 \foreach \k in {0,100,...,500}
@@ -238,11 +270,11 @@ where $Q$ has degree $\ell$. This is the costly operation both in theory and pra
 \small{$X^p \mod{Q(X)}$ with $\deg(Q) = d$ in $\F_p$ using 
 \textcolor{blue}{Sage},
 \textcolor{red}{Nemo} and 
-\textcolor{green}{PARI}.}
+\textcolor{darkgreen}{PARI}.}
 
 \end{center}
 
-\paragraph{Total cost} Complete walk in the isogeny graph in approximately 7 minutes, with 20 seconds spent on each of the largest primes.
+\paragraph{Total cost} A walk in the isogeny graph is 880$s$, approx. 12$s$ spent with each prime $\ell$ up to 907. We can do better if the initial curve has more Elkies primes.
 }
 
 %Third column
@@ -266,7 +298,7 @@ defined over $\F_p$ (also works with small extensions):
 
 \draw[very thick, blue] plot file {sagetors.txt};
 \draw[very thick, red] plot file {generic.txt};
-\draw[very thick, green] plot file {montgomery.txt};
+\draw[very thick, darkgreen] plot file {montgomery.txt};
 \draw[color=gray!50, very thin] (1,0) grid[xstep = 1, ystep = 0.25] (10, 2);
 \foreach \k in {1,2,...,10}
  \draw  (\k, -0.1) node  {\small\k};
@@ -281,9 +313,9 @@ defined over $\F_p$ (also works with small extensions):
 \end{tikzpicture}
 
 \small $[p^d] P$ for $P \in E(\F_{p^d})$ using
-\textcolor{blue}{Sage built-in},
+\textcolor{blue}{Sage built-in multiplication},
 \textcolor{red}{generic arithmetic in Nemo} and
-\textcolor{green}{Montgomery arithmetic in Nemo}
+\textcolor{darkgreen}{Montgomery arithmetic in Nemo}
 
 \end{center}
 
@@ -299,14 +331,14 @@ defined over $\F_p$ (also works with small extensions):
 \item  2, 3, 13, 19, 29, 59, 179, 199 divide $\#E(\F_p)$,
 \item 7, 11, 17, 67, 281, 491, 1297 divide $\#E(\F_{p^2}), \ldots$
 \end{itemize}
-Total cost for a walk is now \ldots
+Total cost for a walk is now approx. 360$s$, 6$s$ spent on each prime up to 521.
 
 }
 
 \block{Elliptic Curves in Nemo}{
 On \url{github.com/defeo/EllipticCurves.jl} :
 \begin{itemize}
-\item Weierstrass and Montgomery equations \& arithmetic, isomorphisms
+\item Weierstrass and Montgomery models, isomorphisms
 \item Isogenies, Vélu formul\ae, BMSS algorithm
 \item Over finite fields : field extensions, random points, torsion points \ldots
 \end{itemize}
