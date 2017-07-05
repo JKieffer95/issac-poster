@@ -97,7 +97,7 @@ that is also a morphism of abelian groups. Call \emph{$\ell$-isogeny} an isogeny
 
 \block{Isogeny graphs}{
 \begin{itemize}
-\item Vertices are elliptic curves over $\F_p$ up to isomorphism,
+\item Vertices are elliptic curves over $\F_p$ up to isomorphism, labelled by $j$-invariant.
 \item Edges are isogenies of some fixed degrees linking them.
 \end{itemize}
 
@@ -148,7 +148,7 @@ For \emph{ordinary} elliptic curves, typical shape \cite{Kohel}:
 \end{center}
 
 \paragraph{Action of a class group}
-Let $E/\F_p$ be an ordinary elliptic curve.
+Let $E/\F_p$ be ordinary.
 \begin{itemize}
 \item
 The ring $\End(E)$ is isomorphic to an order $\O$ in a quadratic imaginary field.
@@ -208,8 +208,8 @@ in $\F_p$ are the neighbors of $E$ in the $\ell$-isogeny graph.
 \item Compute its roots $j_1, j_2$ in $\F_p$ (always two)
 \item Choose the neighbor corresponding to $(\ell, v)$:
 \begin{itemize}
-\item \textbf{Compute the kernel of the isogeny $j\to j_i$;}
-\item It is stable under Frobenius: eigenvalue must be $v$.
+\item \textbf{Compute the kernel of the isogeny to $j_i$;}
+\item Check that Frobenius acts on it as $[v]$.
 \end{itemize}
 \end{itemize}
 
@@ -263,11 +263,11 @@ where $Q$ has degree $\ell$. This is the costly operation both in theory and pra
  
 \draw[->] (0,0) -- (0, 5.3);
 \draw[->] (0,0) -- (520, 0);
-\draw (550, 0) node {$d$};
+\draw (550, 0) node {$\ell$};
 \draw (0, 5.5) node {$t\ (s)$};
 \end{tikzpicture}
 
-\small{$X^p \mod{Q(X)}$ with $\deg(Q) = d$ in $\F_p$ using 
+\small{$X^p \mod{Q(X)}$ with $\deg(Q) = \ell$ in $\F_p$ using 
 \textcolor{blue}{Sage},
 \textcolor{red}{Nemo} and 
 \textcolor{darkgreen}{PARI}.}
@@ -276,7 +276,7 @@ where $Q$ has degree $\ell$. This is the costly operation both in theory and pra
 
 \paragraph{Total cost} A walk in the isogeny graph is 880$s$, approx. 12$s$ spent with each prime $\ell$ up to 907.
 
-\paragraph{Idea} We can do better if the initial curve has more Elkies primes.
+\paragraph{Idea} We can do better if the initial curve has more Elkies primes, or rational torsion points.
 }
 
 %Third column
@@ -286,11 +286,11 @@ where $Q$ has degree $\ell$. This is the costly operation both in theory and pra
 \block{Speeding computations with torsion points}{
 \paragraph{An alternative method}
 If $E$ has points of order $\ell$
-defined over $\F_p$ (also works with small extensions):
+defined over $\F_p$ (also works with small extensions $\F_{p^d}$):
 \begin{itemize}
 \item $P$ random in $E(\F_p)$, $Q \gets [C/\ell]P$ until $Q\neq \O_E$ (where $C = \#E(\F_p)$)
 \item Compute $S = \{[i]Q\ :\ 0\leq i\leq \ell-1\}$
-\item Use V\'elu's formul\ae\ to find the isogenous curve $E/S$.
+\item Use V\'elu's formulas\ to find the isogenous curve $E/S$.
 \end{itemize}
 
 \paragraph{Cost analysis} If $\ell$ is not too large, the scalar multiplication dominates. Again 3.20GHz Intel Xeon.
@@ -341,7 +341,7 @@ Total cost for a walk is now approx. 360$s$, 6$s$ spent on each prime up to 521.
 On \url{github.com/defeo/EllipticCurves.jl}:
 \begin{itemize}
 \item Weierstrass and Montgomery models, isomorphisms
-\item Isogenies, Vélu formul\ae, BMSS algorithm
+\item Isogenies, Vélu's formulas, BMSS algorithm
 \item Over finite fields: field extensions, random points, torsion points \ldots
 \end{itemize}
 }
