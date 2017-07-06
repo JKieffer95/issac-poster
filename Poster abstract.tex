@@ -90,13 +90,11 @@ For our experiments,
 we chose parameters aiming at the 128-bit security level
 (comparable with contemporary cryptosystems such as AES)
 against the best known classical attacks:
-%To fix ideas, let us give an example of parameters achieving security comparable with contemporary cryptosystems, against the best known classical attacks. 
 we take
 $p~=~2^{500} + 55$, 
 $K = 2$, 
 $E_0: y^2 = x^3 + 5x^2 + x$,
 and $L$ a set of 115 convenient primes with norms less than $1400$.
-%(out of 222),
 For each \(\frakell\) in \(L\),
 the classical modular polynomial \(\Phi_\ell(X,Y)\)
 is precomputed.
@@ -119,9 +117,6 @@ is precomputed.
     }
     \Return{\(E\)}
 \end{algorithm}
-
-
-%Note that we cannot use all primes, but only about half of them: these primes are usually called \emph{Elkies primes} in point counting. One could try to find special curves, for which more primes could are Elkies. It is a major issue since the security of the scheme grows exponentially with the length of $L$ and only polynomially with $K$, and we return to this question later on.
 
 \section{A first solution}
 
@@ -249,8 +244,7 @@ Our timings (again on a 3.20GHz Intel Xeon workstation) are as follows:
 Further experiments show that Julia's compilation and Montgomery arithmetic are equally reponsible for these gains for low degrees, and that Sage handles field extensions more efficiently.
 
 To fully exploit this speed-up, we have to find an \(E_0/\F_p\)
-such that many small primes divide \(\#E_0(\FF_{p^d})\) for small~\(d\). 
-What can be achieved in a reasonable amount of time, and what speed-up we can obtain, seem interesting questions. 
+such that many small primes divide \(\#E_0(\FF_{p^d})\) for small~\(d\), and this requires computational effort. The method we use to generate such curves and the results we obtain are documented on the poster itself.
 
 
 \begin{thebibliography}{99}
@@ -297,24 +291,6 @@ V. Shoup.
 \newblock NTL : a library for doing number theory.
 \newblock \url{http://www.shoup.net/ntl/}
 
-%\bibitem{Waterhouse}
-%W. C. Waterhouse.
-%\newblock Abelian varieties over finite fields.
-%\newblock {\em Ann. sci. \'E.N.S.} 2:4:521--560, 1969.
-
-%\bibitem{Attack}
-%S. Galbraith.
-%\newblock Constructing isogenies between elliptic curves over finite fields.
-%\newblock {\em LMS J. Comput. Math.} 2:118--138, 1999.
-
-%\bibitem{Kohel}
-%D. Kohel.
-%\newblock Endomorphism rings of elliptic curves over finite fields.
-
-%\bibitem{Flint}
-%W. Hart, F. Johansson, S. Pancratz.
-%\newblock {FLINT}: {F}ast {L}ibrary for {N}umber {T}heory, 2013,
-%\newblock Version 2.4.0, \url{http://flintlib.org}
 
 \end{thebibliography}
 
